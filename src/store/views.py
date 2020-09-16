@@ -5,6 +5,7 @@ from .models import *
 def store(request):
     products = Product.objects.all()
     context = {'products':products}
+    
     return render(request, 'store/store.html', context)
 
 
@@ -18,11 +19,21 @@ def cart(request):
         items = [] #Placeholder for not logged in user
         order = {'get_cart_total':0, 'get_cart_items':0} #Placeholder for not logged in user
     context = {'items':items, 'order':order}
+
     return render(request, 'store/cart.html', context)
 
 
 def checkout(request):
-    context = {}
+
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        items = order.orderitem_set.all()
+    else:
+        items = [] #Placeholder for not logged in user
+        order = {'get_cart_total':0, 'get_cart_items':0} #Placeholder for not logged in user
+    context = {'items':items, 'order':order}
+
     return render(request, 'store/checkout.html', context)
 
 
