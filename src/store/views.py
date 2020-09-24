@@ -3,13 +3,13 @@ from django.http import JsonResponse
 import json
 import datetime
 
-from .utils import cookie_cart, cart_data, guest_order
+from .utils import cart_data, guest_order
 from .models import *
 
 
 def store(request):
 
-    data = cookie_cart(request)
+    data = cart_data(request)
     cartItems = data['cartItems']
     products = Product.objects.all()
 
@@ -19,7 +19,7 @@ def store(request):
 
 def cart(request):
 
-    data = cookie_cart(request)
+    data = cart_data(request)
     cartItems = data['cartItems']
     order = data['order']
     items = data['items']
@@ -30,7 +30,7 @@ def cart(request):
 
 def checkout(request):
 
-    data = cookie_cart(request)
+    data = cart_data(request)
     cartItems = data['cartItems']
     order = data['order']
     items = data['items']
@@ -72,7 +72,7 @@ def processOrder(request):
 
     else:
         customer, order = guest_order(request, data)
-        
+
     total = float(data['form']['total'])
     order.transaction_id = transaction_id
 

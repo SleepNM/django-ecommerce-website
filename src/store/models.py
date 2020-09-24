@@ -33,7 +33,7 @@ class Order(models.Model):
     transaction_id = models.CharField(null=True, max_length=254)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.id) + " by " + str(self.customer)
 
     @property
     def shipping(self):
@@ -67,6 +67,9 @@ class OrderItem(models.Model):
     @property
     def get_total(self):
         return self.product.price * self.quantity
+
+    def __str__(self):
+        return 'Order No. ' + str(self.order)
 
 class ShippingAddress(models.Model):
     customer = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.SET_NULL)
