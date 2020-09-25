@@ -26,7 +26,7 @@ class Product(models.Model):
     def imageURL(self):
         try:
             url = self.image.url
-        except self.image.url.DoesNotExist():
+        except:
             url = ""
         return url
 

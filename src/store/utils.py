@@ -5,7 +5,7 @@ from .models import Customer, Product, Order, OrderItem
 def cookie_cart(request):
     try:
         cart = json.loads(request.COOKIES['cart'])
-    except ("Cart not yet created"):
+    except:
         cart = {}
     print("Cart: ", cart)
     items = []
@@ -35,7 +35,7 @@ def cookie_cart(request):
 
             if not product.digital:
                 order['shipping'] = True
-        except ("Something Wrong"):
+        except:
             pass
     return {'cartItems': cartItems, 'order': order, 'items': items}
 
@@ -87,4 +87,4 @@ def guest_order(request, data):
             order=order,
             quantity=item['quantity']
             )
-    return customer, order, orderItem
+    return customer, order
