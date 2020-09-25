@@ -1,14 +1,21 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Customer(models.Model):
-    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+        )
     name = models.CharField(null=True, max_length=254)
     email = models.EmailField(max_length=254)
 
     def __str__(self):
         return self.name
-    
+
+
 class Product(models.Model):
     name = models.CharField(max_length=254)
     price = models.DecimalField(max_digits=7, decimal_places=2)
@@ -19,15 +26,21 @@ class Product(models.Model):
     def imageURL(self):
         try:
             url = self.image.url
-        except:
+        except self.image.url.DoesNotExist():
             url = ""
         return url
 
     def __str__(self):
         return self.name
 
+
 class Order(models.Model):
-    customer = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.SET_NULL)
+    customer = models.ForeignKey(
+        Customer,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+        )
     date_ordered = models.DateTimeField(auto_now_add=True)
     complete = models.BooleanField(default=False)
     transaction_id = models.CharField(null=True, max_length=254)
@@ -40,7 +53,7 @@ class Order(models.Model):
         shipping = False
         orderitems = self.orderitem_set.all()
         for item in orderitems:
-            if item.product.digital == False:
+            if not item.product.digital:
                 shipping = True
 
         return shipping
@@ -50,7 +63,7 @@ class Order(models.Model):
         orderitems = self.orderitem_set.all()
         total = sum([item.get_total for item in orderitems])
         return total
-    
+
     @property
     def get_cart_items(self):
         orderitems = self.orderitem_set.all()
@@ -71,8 +84,14 @@ class OrderItem(models.Model):
     def __str__(self):
         return 'Order No. ' + str(self.order)
 
+
 class ShippingAddress(models.Model):
-    customer = models.ForeignKey(Customer, null=True, blank=True, on_delete=models.SET_NULL)
+    customer = models.ForeignKey(
+        Customer,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+        )
     order = models.ForeignKey(Order, null=True, on_delete=models.SET_NULL)
     address = models.CharField(null=False, max_length=254)
     city = models.CharField(null=False, max_length=254)
@@ -82,4 +101,3 @@ class ShippingAddress(models.Model):
 
     def __str__(self):
         return self.address
-    

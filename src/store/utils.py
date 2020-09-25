@@ -1,14 +1,15 @@
 import json
-from .models import *
+from .models import Customer, Product, Order, OrderItem
+
 
 def cookie_cart(request):
     try:
         cart = json.loads(request.COOKIES['cart'])
-    except:
+    except ("Cart not yet created"):
         cart = {}
     print("Cart: ", cart)
     items = []
-    order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
+    order = {'get_cart_total': 0, 'get_cart_items': 0, 'shipping': False}
     cartItems = order['get_cart_items']
 
     for i in cart:
@@ -21,27 +22,31 @@ def cookie_cart(request):
             order['get_cart_items'] += cart[i]['quantity']
 
             item = {
-                "product":{
-                    'id':product.id,
-                    'name':product.name,
-                    'price':product.price,
-                    'imageURL':product.imageURL,
+                "product": {
+                    'id': product.id,
+                    'name': product.name,
+                    'price': product.price,
+                    'imageURL': product.imageURL,
                     },
-                "quantity":cart[i]['quantity'],
-                "get_total":total
+                "quantity": cart[i]['quantity'],
+                "get_total": total
             }
             items.append(item)
-            
+
             if not product.digital:
                 order['shipping'] = True
-        except:
+        except ("Something Wrong"):
             pass
-    return {'cartItems':cartItems, 'order':order, 'items':items}
+    return {'cartItems': cartItems, 'order': order, 'items': items}
+
 
 def cart_data(request):
     if request.user.is_authenticated:
         customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        order, created = Order.objects.get_or_create(
+            customer=customer,
+            complete=False
+            )
         items = order.orderitem_set.all()
         cartItems = order.get_cart_items
     else:
@@ -49,7 +54,8 @@ def cart_data(request):
         cartItems = cookieData['cartItems']
         order = cookieData['order']
         items = cookieData['items']
-    return {'cartItems':cartItems, 'order':order, 'items':items}
+    return {'cartItems': cartItems, 'order': order, 'items': items}
+
 
 def guest_order(request, data):
 
@@ -69,8 +75,8 @@ def guest_order(request, data):
     customer.save()
 
     order = Order.objects.create(
-        customer = customer,
-        complete = False
+        customer=customer,
+        complete=False
         )
 
     for item in items:
@@ -81,4 +87,4 @@ def guest_order(request, data):
             order=order,
             quantity=item['quantity']
             )
-    return customer, order
+    return customer, order, orderItem

@@ -3,8 +3,10 @@ from django.http import JsonResponse
 import json
 import datetime
 
+
 from .utils import cart_data, guest_order
-from .models import *
+from .models import Product, Order, \
+                     OrderItem, ShippingAddress
 
 
 def store(request):
@@ -13,7 +15,7 @@ def store(request):
     cartItems = data['cartItems']
     products = Product.objects.all()
 
-    context = {"products":products, "cartItems":cartItems}
+    context = {"products": products, "cartItems": cartItems}
     return render(request, 'store/store.html', context)
 
 
@@ -24,7 +26,7 @@ def cart(request):
     order = data['order']
     items = data['items']
 
-    context = {'items':items, 'order':order, "cartItems":cartItems}
+    context = {'items': items, 'order': order, "cartItems": cartItems}
     return render(request, 'store/cart.html', context)
 
 
@@ -35,21 +37,28 @@ def checkout(request):
     order = data['order']
     items = data['items']
 
-    context = {'items':items, 'order':order, "cartItems":cartItems}
+    context = {'items': items, 'order': order, "cartItems": cartItems}
     return render(request, 'store/checkout.html', context)
+
 
 def update_item(request):
     data = json.loads(request.body)
     productId = data['productId']
     action = data['action']
-    
+
     print("Action: ", action)
     print("Product ID: ", productId)
 
     customer = request.user.customer
     product = Product.objects.get(id=productId)
-    order, created = Order.objects.get_or_create(customer=customer, complete=False)
-    orderItem, created = OrderItem.objects.get_or_create(order=order, product=product)
+    order, created = Order.objects.get_or_create(
+        customer=customer,
+        complete=False
+        )
+    orderItem, created = OrderItem.objects.get_or_create(
+        order=order,
+        product=product
+        )
 
     if action == 'add':
         orderItem.quantity += 1
@@ -62,13 +71,17 @@ def update_item(request):
 
     return JsonResponse('Item was added', safe=False)
 
+
 def processOrder(request):
     transaction_id = datetime.datetime.now().timestamp()
     data = json.loads(request.body)
 
     if request.user.is_authenticated:
         customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        order, created = Order.objects.get_or_create(
+            customer=customer,
+            complete=False
+            )
 
     else:
         customer, order = guest_order(request, data)
@@ -82,12 +95,12 @@ def processOrder(request):
 
     if order.shipping:
         ShippingAddress.objects.create(
-            customer = customer,
-            order = order,
-            address = data['shipping']['address'],
-            city = data['shipping']['city'],
-            state = data['shipping']['state'],
-            zipcode = data['shipping']['zipcode'],
+            customer=customer,
+            order=order,
+            address=data['shipping']['address'],
+            city=data['shipping']['city'],
+            state=data['shipping']['state'],
+            zipcode=data['shipping']['zipcode'],
             )
 
     return JsonResponse('Payment complete!', safe=False)
